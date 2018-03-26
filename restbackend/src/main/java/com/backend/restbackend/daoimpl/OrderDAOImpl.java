@@ -382,6 +382,7 @@ public class OrderDAOImpl implements OrderDAO {
 		  //get one by one orderlist
 		     
 		     System.out.println(orderList.size());
+		     if(orderList.size()!=0) {
 		     for(int i = 0 ;i<orderList.size();i++) {
 		    	 Price pri; 
 		    	 //Set list of value 
@@ -480,10 +481,12 @@ public class OrderDAOImpl implements OrderDAO {
 		    	    	return false;
 		    	    }
 				     
-		    	  
-		     }		     
+		    	   
+		     }
+		     return true;
+		    }
+		return false;
 		
-		return true;
 	   }catch (RuntimeException re)
 	   {
 		log.error("Returrning order list failed", re);

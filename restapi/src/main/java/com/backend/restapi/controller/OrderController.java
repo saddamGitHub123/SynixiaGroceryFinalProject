@@ -247,8 +247,13 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 			
 			//System.out.println(shopid+" "+userid+" "+order);
           }
+      else {
+    	       response.setStatus_code(JsonResponse.CODE__EMPTY);
+		   response.setStatus_message(JsonResponse.DISPATCH__ERROR);
+    	       return response;
+      }
       
-      return response;
+      
 			
       } catch (Exception e) {
 				

@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.backend.restbackend.common.JsonResponse;
 import com.backend.restbackend.dao.LoginDAO;
+import com.backend.restbackend.exception.dto.BackEndSQLException;
 import com.backend.restbackend.user.dto.User;
 import com.backend.restbackend.user.model.LoginResponse;
 import com.backend.restbackend.user.model.UserResponseModel;
@@ -48,8 +50,8 @@ public class LoginController {
 			UserResponseModel userDetails = loginDAO.checkLogin(loginuser);
 			if (userDetails == null) {
 				loginResponse.setData(userDetails);
-				loginResponse.setStatus_code("400");
-				loginResponse.setStatus_message("User Name and Password not found");
+				loginResponse.setStatus_code(JsonResponse.CODE__EMPTY);
+				loginResponse.setStatus_message(JsonResponse.USER__NAME_PSW_NOT_FOUND);
 				logger.error("User name and password not found");
 				
 				return loginResponse;
@@ -57,15 +59,23 @@ public class LoginController {
 			else {
 
 				loginResponse.setData(userDetails);
-				  loginResponse.setStatus_code("200");
-					loginResponse.setStatus_message("Successfully");
-					logger.error("User name and password  found");
+				loginResponse.setStatus_code(JsonResponse.CODE__OK);
+			    loginResponse.setStatus_message(JsonResponse.USER__NAME_PSW_FOUND);
+				logger.debug("User name and password  found");
 				return loginResponse;
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+		} catch (BackEndSQLException ex) {
+			logger.error("loginUser(): Error - " + ex);
+			//loginResponse.setData(userDetails);
+			loginResponse.setStatus_code(JsonResponse.CODE__EMPTY);
+			loginResponse.setStatus_message("Exception!! : " + ex);
+			return loginResponse;
+		}catch (Exception e) {
+			logger.error("loginUser(): Error - " + e);
+			loginResponse.setStatus_code(JsonResponse.CODE__EMPTY);
+			loginResponse.setStatus_message("Exception Throwing"+e);
+			return loginResponse;
 		}
 	}
 	

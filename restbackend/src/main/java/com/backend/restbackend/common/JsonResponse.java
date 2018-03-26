@@ -18,8 +18,7 @@ public class JsonResponse {
     @JsonIgnore
     public static final String CODE__EMPTY = "400";
     
-    @JsonIgnore
-    public static final String CODE__EXCEPTION = "Exception";
+    
     @JsonIgnore
     public static final String CODE__INVALID_REQUEST = "INVALID_REQUEST";
     @JsonIgnore
@@ -27,15 +26,27 @@ public class JsonResponse {
     @JsonIgnore
     public static final String CODE__UNKNOWN_ERROR = "UNKNOWN_ERROR";
     
+    // For Login controller response json 
+    public static final String USER__NAME_PSW_NOT_FOUND = "User Name and Password not found";
+    public static final String USER__NAME_PSW_FOUND = "User Name And Password Successfully Found";
+    
+    
+    
+    
+    // This is Order Error And Successful JSON Message
     @JsonIgnore
     public static final String CODE__SUCCESS = "Your Order is Placed Successfully";
     public static final String DISPATCH__SUCCESS = "Your Order is Dispatch Successfully";
+    public static final String DISPATCH__ERROR = "Your Order is Not Avalaible";
+    @JsonIgnore
+    public static final String CODE__EXCEPTION = "SQLException";
+    
+    
+  
     
     
     public static final String LIST__ERRORE = "List is Empty";
-    
 
-    
     private String code;
     private List<String> messages;
 

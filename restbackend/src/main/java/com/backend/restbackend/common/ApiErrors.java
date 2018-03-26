@@ -5,6 +5,13 @@ public interface ApiErrors {
 	//ORDER TABLE	
 	public static final String ERROR__ORDER_LIST_EMPTY = "Orderlist is empty";
 	
+	
+	
+	//for login controller
+
+	
+	
+	
     public static final String ERROR__PHONE_CELL_MISSING = "Phone cell is missing";
     public static final String ERROR__EMAIL_MISSING = "Email Id is missing";
     public static final String ERROR__MISSING_PASSOWRD = "Password is missing";
