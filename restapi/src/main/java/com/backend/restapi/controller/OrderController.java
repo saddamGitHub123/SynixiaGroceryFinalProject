@@ -1,5 +1,10 @@
 package com.backend.restapi.controller;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,9 +20,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.backend.restbackend.common.ApiErrors;
+import com.backend.restbackend.common.ApiUrl;
 import com.backend.restbackend.common.JsonResponse;
 import com.backend.restbackend.common.SuccResponse;
 import com.backend.restbackend.dao.OrderDAO;
+import com.backend.restbackend.dao.UserDAO;
 import com.backend.restbackend.order.dto.Order;
 import com.backend.restbackend.order.model.DispatchRequest;
 import com.backend.restbackend.order.model.OrderListResponse;
@@ -29,16 +36,23 @@ import com.backend.restbackend.order.model.OrderSizeResponse;
 import com.backend.restbackend.order.model.Ordered_List;
 import com.backend.restbackend.order.model.ShopkeeperOrderResponse;
 
+/**
+ * 
+ * @author sk saddam hosan
+ *
+ */
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @Controller
 @EnableWebMvc
 @RequestMapping("/order")
 public class OrderController {
-private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+	
+	private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 	
 	@Autowired
 	   public OrderDAO orderDAO;
-	
+	@Autowired
+	public UserDAO userDAO;
 
 	/**
 	 * Add orderList using shopID and userID used by User
@@ -52,25 +66,39 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 		
 		try {
 
+			// For getting list of the Order
+			
+			List<Order> orderList = orderDAO.listOfOrder();
+			
+			System.out.println(orderList.size());
 			
 			//call the add order method
 			//if(orderDAO.addOrder(orderRequest)) {
-			if(orderDAO.addOrderAndOrderID(orderRequest)) {
+			String Order_ID = ApiUrl.ORDER__STRING + orderList.size();
 			
+			 orderRequest.setOrder_ID(Order_ID);			
+			String orderID = orderDAO.addOrderAndOrderID(orderRequest);
+			if(!orderID.isEmpty()) {
 			
+			/*
+			 * Add push notification using Shop_ID
+			 * **/
+				
+				// Seding push notification using Device_ID
 			
-//			response.setStatus_code(JsonResponse.CODE__OK);
-//			response.setStatus_message(JsonResponse.CODE__SUCCESS);
-				response.setStatus_code("200");
-				response.setStatus_message("Successfull");
+				userDAO.getDeviceID(orderRequest.getShop_ID(),ApiErrors.FCM_SUCCESS__ADD_ORDER + orderID);
+				
+
+			response.setStatus_code(JsonResponse.CODE__OK);
+			response.setStatus_message(ApiErrors.SUCCESS__AUTHENTICATED);
 			return response;
 			
 			//System.out.println(shopid+" "+userid+" "+order);
 			}
 			else {
-				//response.setStatus_code(JsonResponse.CODE__EMPTY);
 				response.setStatus_code(JsonResponse.CODE__EMPTY);
-				response.setStatus_message("Something wrong!! addOrderAndOrderID() in orderDAO");
+				//response.setStatus_message("Something wrong!! addOrderAndOrderID() in orderDAO");
+				response.setStatus_message(JsonResponse.CODE__ERROR);
 				return response;
 			}
 
@@ -78,7 +106,7 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 			
 			logger.error("addOrderListByShopID(): Error - " + e);
 			response.setStatus_code(JsonResponse.CODE__EMPTY);
-			response.setStatus_message("Something wrong!! throwing Exception");
+			response.setStatus_message(JsonResponse.CODE__EXCEPTION);
 			return response;
 		}
 	}
@@ -113,8 +141,11 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 		     
 		     if(orderList.size() == 0 ) {
 		    	 response = new ShopkeeperOrderResponse(orderList);
+		    	// response.setStatus_code(JsonResponse.CODE__EMPTY);
+					//response.setStatus_message(ApiErrors.ERROR__ORDER_LIST_EMPTY);
+		    	 
 		    	 response.setStatus_code(JsonResponse.CODE__EMPTY);
-					response.setStatus_message(ApiErrors.ERROR__ORDER_LIST_EMPTY);
+		    	 response.setStatus_message(ApiErrors.ERROR__ORDER_LIST_EMPTY);
 					return response;
 		     }
 		     //For paging
@@ -137,8 +168,8 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 		    		 //when list is empty 
 		                   	 List<Ordered_List> myEmptyList = Collections.<Ordered_List>emptyList();
 		    	             response = new ShopkeeperOrderResponse(myEmptyList);
-		    	             response.setStatus_code("200");
-			                 response.setStatus_message("Order List Is Empty");
+		    	             response.setStatus_code(JsonResponse.CODE__EMPTY);
+			                 response.setStatus_message(ApiErrors.ERROR__ORDER_LIST_EMPTY);
 			                 return response;
 		                    }
 		    	 //for last list of orderList from list 
@@ -153,15 +184,16 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 		   
 		     
 		     response.setStatus_code(JsonResponse.CODE__OK);
-		     response.setStatus_message("Successfully Authenticated");
+		     response.setStatus_message(ApiErrors.SUCCESS__AUTHENTICATED);
 		     response.setOrderSize(orderList.size());
 		     return response;
 
 		} catch (Exception e) {
 			
 			logger.error("userOrderListByShopID(): Error - " + e);
+			//response.setStatus_code(JsonResponse.CODE__EMPTY);
 			response.setStatus_code(JsonResponse.CODE__EMPTY);
-			response.setStatus_message("Something worng!! throwing Exception");
+			response.setStatus_message(JsonResponse.CODE__EXCEPTION);
 			return response;
 		}
 		
@@ -243,23 +275,20 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 			
 			response.setStatus_code(JsonResponse.CODE__OK);
 			response.setStatus_message(JsonResponse.DISPATCH__SUCCESS);
+			//response.setStatus_message(JsonResponse.DISPATCH__SUCCESS);
 			return response;
 			
 			//System.out.println(shopid+" "+userid+" "+order);
           }
-      else {
-    	       response.setStatus_code(JsonResponse.CODE__EMPTY);
-		   response.setStatus_message(JsonResponse.DISPATCH__ERROR);
-    	       return response;
-      }
       
-      
+      return response;
 			
       } catch (Exception e) {
 				
 				logger.error("orderDispatch(): Error - " + e);
-				response.setStatus_code(JsonResponse.CODE__EMPTY);
-				response.setStatus_message("Something worng!! throwing Exception");
+			//	response.setStatus_code(JsonResponse.CODE__EMPTY);
+				response.setStatus_code(JsonResponse.CODE__OK);
+				response.setStatus_message(JsonResponse.CODE__EXCEPTION);
 				return response;
 			}	
 		
@@ -294,23 +323,28 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 			
 			if(orderSize.size() == 0) {
 				orderSizeResponse = new OrderSizeResponse(orderSize);
+				//orderSizeResponse.setStatus_code(JsonResponse.CODE__EMPTY);
+				//orderSizeResponse.setStatus_message(JsonResponse.LIST__ERRORE);
+				
 				orderSizeResponse.setStatus_code(JsonResponse.CODE__EMPTY);
-				orderSizeResponse.setStatus_message(JsonResponse.LIST__ERRORE);
+				orderSizeResponse.setStatus_message(ApiErrors.ERROR__ORDER_LIST_EMPTY);
 				return orderSizeResponse;
 				
 			}
 			
 			orderSizeResponse = new OrderSizeResponse(orderSize);
 			orderSizeResponse.setStatus_code(JsonResponse.CODE__OK);
-			orderSizeResponse.setStatus_message("Successfully Authenticated");
+			orderSizeResponse.setStatus_message(ApiErrors.SUCCESS__AUTHENTICATED);
+			logger.debug(" Returring orderSizeStructere() method"); 
 			return orderSizeResponse;
 	
 		
       } catch (Exception e) {
 				
 				logger.error("orderDispatch(): Error - " + e);
+				//orderSizeResponse.setStatus_code(JsonResponse.CODE__EMPTY);
 				orderSizeResponse.setStatus_code(JsonResponse.CODE__EMPTY);
-				orderSizeResponse.setStatus_message("Something Wrong!! throwing Exception");
+				orderSizeResponse.setStatus_message(JsonResponse.CODE__EXCEPTION);
 				return orderSizeResponse;
 			}
 		
@@ -346,23 +380,27 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 			if(orderSize.size() == 0) {
 				//orderSizeResponse = new OrderSizeResponse(orderSize);
 				orderListResponse = new OrderListResponse(orderSize);
+			//	orderListResponse.setStatus_code(JsonResponse.CODE__EMPTY);
+				//orderListResponse.setStatus_message(JsonResponse.LIST__ERRORE);
+				
 				orderListResponse.setStatus_code(JsonResponse.CODE__EMPTY);
-				orderListResponse.setStatus_message(JsonResponse.LIST__ERRORE);
+				orderListResponse.setStatus_message(ApiErrors.ERROR__ORDER_LIST_EMPTY);
 				return orderListResponse;
 				
 			}
 			
 			orderListResponse = new OrderListResponse(orderSize);
 			orderListResponse.setStatus_code(JsonResponse.CODE__OK);
-			orderListResponse.setStatus_message("Successfully Authenticated");
+			orderListResponse.setStatus_message(ApiErrors.SUCCESS__AUTHENTICATED);
 			return orderListResponse;
 	
 		
       } catch (Exception e) {
 				
 				logger.error("orderDispatch(): Error - " + e);
-				orderListResponse.setStatus_code(JsonResponse.CODE__EXCEPTION);
-				orderListResponse.setStatus_message("Something Wrong!! throwing Exception");
+			//	orderListResponse.setStatus_code(JsonResponse.CODE__EXCEPTION);
+				orderListResponse.setStatus_code(JsonResponse.CODE__EMPTY);
+				orderListResponse.setStatus_message(JsonResponse.CODE__EXCEPTION);
 				return orderListResponse;
 			}
 		
@@ -384,25 +422,25 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 		
 		 String AUTH_KEY_FCM = "AAAAwNSbEj0:APA91bG-iq7DieKB5VF2nTk2Du6bo779LsoBIPFmIyJgxx3Ej_YD6bEiIWlGMNwTeknUv4M64RpS3FtUcfD44fF3YS_gGYe6i35LF2rzLckR2rJj8PlNL0AFsghNBUhBas2tchBQC5bt";
 		 String API_URL_FCM = "https://fcm.googleapis.com/fcm/send";
-		 String deviceToken = "XYWARTYGFRT4T6";
+		// String deviceToken = "XYWARTYGFRT4T6";
 		 String result = "";
 		
 		try {
 
 			 
 			 
-//			    URL url = new URL(API_URL_FCM);
-//			    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//
-//			    conn.setUseCaches(false);
-//			    conn.setDoInput(true);
-//			    conn.setDoOutput(true);
-//
-//			    conn.setRequestMethod("POST");
-//			    conn.setRequestProperty("Authorization", "key=" + AUTH_KEY_FCM);
-//			    conn.setRequestProperty("Content-Type", "application/json");
-//
-//			    JSONObject json = new JSONObject();
+			    URL url = new URL(API_URL_FCM);
+			    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+			    conn.setUseCaches(false);
+			    conn.setDoInput(true);
+			    conn.setDoOutput(true);
+
+			    conn.setRequestMethod("POST");
+			    conn.setRequestProperty("Authorization", "key=" + AUTH_KEY_FCM);
+			    conn.setRequestProperty("Content-Type", "application/json");
+
+			   // JsonObject json = new JSONPObject();
 
 			    /*json.put("to", deviceToken.trim());
 			    JSONObject info = new JSONObject();
@@ -411,20 +449,20 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 			                                                            // body
 			    json.put("notification", info);*/
 			    
-//			    
-//			    OutputStreamWriter wr = new OutputStreamWriter(
-//		                conn.getOutputStream());
-//		        wr.write(json.toString());
-//		        wr.flush();
-//
-//		        BufferedReader br = new BufferedReader(new InputStreamReader(
-//		                (conn.getInputStream())));
+			    
+			    OutputStreamWriter wr = new OutputStreamWriter(
+		                conn.getOutputStream());
+		    //    wr.write(json.toString());
+		        wr.flush();
 
-//		        String output;
-//		        System.out.println("Output from Server .... \n");
-//		        while ((output = br.readLine()) != null) {
-//		            System.out.println(output);
-//		        }
+		        BufferedReader br = new BufferedReader(new InputStreamReader(
+		                (conn.getInputStream())));
+
+		        String output;
+		        System.out.println("Output from Server .... \n");
+		        while ((output = br.readLine()) != null) {
+		            System.out.println(output);
+		        }
 		        result = "Success";
 			
 			return result;
@@ -438,4 +476,5 @@ private static final Logger logger = LoggerFactory.getLogger(OrderController.cla
 	    return result;
 	}
 
+	
 }
