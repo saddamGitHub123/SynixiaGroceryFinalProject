@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.backend.restbackend.common.SuccResponse;
 
-
-
 public class AllProduct extends SuccResponse{
 
 

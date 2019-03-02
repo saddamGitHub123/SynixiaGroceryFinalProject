@@ -1,12 +1,10 @@
 package com.backend.restbackend.product.model;
 
 import com.backend.restbackend.common.SuccResponse;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ResponseProductModel extends SuccResponse {
 	
 	private String Request_Type;
-	
 	private String Shop_ID;
 
 	Product_Model productData;
@@ -32,7 +30,6 @@ public class ResponseProductModel extends SuccResponse {
 		Request_Type = request_Type;
 	}
 
-	@JsonIgnore
 	public String getShop_ID() {
 		return Shop_ID;
 	}

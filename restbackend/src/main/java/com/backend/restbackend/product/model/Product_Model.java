@@ -1,10 +1,11 @@
 package com.backend.restbackend.product.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class Product_Model {
+public class Product_Model implements Serializable{
 
 	 
 		private static final long serialVersionUID = 1L;
@@ -60,7 +61,6 @@ public class Product_Model {
 			Product_Type = product_Type;
 			Availability = availability;
 		}*/
-		@JsonIgnore
 		public int getID() {
 			return ID;
 		}

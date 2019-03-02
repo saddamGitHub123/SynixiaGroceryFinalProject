@@ -15,10 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.backend.restbackend.dao.LoginDAO;
-import com.backend.restbackend.exception.dto.BackEndSQLException;
-import com.backend.restbackend.exception.dto.UnknownColumnException;
 import com.backend.restbackend.user.dto.User;
-import com.backend.restbackend.user.model.UserResponseModel;
 
 /**
  * @author Sk Saddam Hosan
@@ -40,11 +37,10 @@ public class LoginDAOImpl implements LoginDAO {
 	 * 
 	 */
 	@Override
-	public UserResponseModel checkLogin(User loginuser) throws BackEndSQLException{
+	public User checkLogin(User loginuser) {
 		
 		log.debug("Inserting LoginDAOImpl class of checkLogin() method");
 		User user = null;
-		UserResponseModel loginResponseModel =null;
 		String User_Name = loginuser.getUser_Name();
 		String User_Password = loginuser.getUser_Password();
 		try {
@@ -60,19 +56,15 @@ public class LoginDAOImpl implements LoginDAO {
 				// userFound= true;
 				log.debug("get successful,User Name and Password found");
 				user = list.get(0);
-				loginResponseModel = new UserResponseModel(user.getShop_ID(), user.getUser_ID(), user.getName(), 
-						user.getUser_Name(), user.getContact(),user.getEmail());
-				log.debug("Returring from checkLogin() from LoginDAOImpl class");
-				return loginResponseModel;
+				return user;
 			} else {
 				log.debug("get successful,No User Name and Password found ");
-				log.debug("Returring from checkLogin() from LoginDAOImpl class");
-				return loginResponseModel;
+				return user;
 			}
 
-		}catch (RuntimeException re) {
-			log.error("Exception Type : ", re);
-			throw new BackEndSQLException(re.getMessage(),re);
+		} catch (RuntimeException re) {
+			log.error("get failed", re);
+			throw re;
 		} finally {
 			/*
 			 * if (sessionFactory != null) { sessionFactory.close(); }

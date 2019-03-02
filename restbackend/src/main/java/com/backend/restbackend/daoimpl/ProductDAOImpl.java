@@ -4,20 +4,27 @@
 package com.backend.restbackend.daoimpl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import com.backend.restbackend.dao.ProductDAO;
 import com.backend.restbackend.product.dto.Price;
 import com.backend.restbackend.product.dto.Product;
 import com.backend.restbackend.product.model.Product_Model;
 import com.backend.restbackend.product.model.UniqueProduct;
+import com.backend.restbackend.user.dto.HeaderRequestInterceptor;
 
 /**
  * @author Sk Saddam Hosan
@@ -137,6 +144,8 @@ private static final Logger log = LoggerFactory.getLogger(ProductDAOImpl.class);
 			  //save the Product value
 			  sessionFactory.getCurrentSession().persist(pro);
 			  
+			  
+			  
 			 // Price pri = new Price();
 			  
 			  List<String> items = product.getProduct_Price();
@@ -171,10 +180,13 @@ private static final Logger log = LoggerFactory.getLogger(ProductDAOImpl.class);
 				  pri = new Price(Product_ID,Shop_ID,items.get(i),unit.get(i),stock.get(i));
 					 // pri = new Price(Product_ID,Shop_ID,items.get(i),unit.get(i));
 				  sessionFactory.getCurrentSession().persist(pri);
+				  
 				  }
 				  
 			  }		  
 			  
+			//  sessionFactory.openSession().flush();
+			 // sessionFactory.openSession().beginTransaction().commit();
 			return true;
 			
 		}catch (RuntimeException re)
@@ -242,7 +254,7 @@ private static final Logger log = LoggerFactory.getLogger(ProductDAOImpl.class);
 				  List<String> Stock_value = productData.getStock_Value();
 				  
 				  System.out.println(priceList.size());
-				  Price pri;
+				  Price pri = null;
 				for(int i = 0 ;i< items.size();i++) {
 					pri = priceList.get(i);
 					
@@ -266,7 +278,7 @@ private static final Logger log = LoggerFactory.getLogger(ProductDAOImpl.class);
 					        .setParameter( "Product_ID", Product_ID )
 					        .executeUpdate();
 					
-					
+					System.out.println(updatedEntities);
 					
 					//int id = priceList.get(i).getID();
 					// pri = new Price(Product_ID, Shop_ID,items.get(i), unit.get(i));
@@ -311,11 +323,12 @@ private static final Logger log = LoggerFactory.getLogger(ProductDAOImpl.class);
 		Product uniqProduct;
 		Price pri;
 		//List<Price> list = new ArrayList();
-		List<UniqueProduct> uniList = new ArrayList();
+		List<UniqueProduct> uniList = new ArrayList<>();
 
 		try{
 			
 			//Get all product list using shop_id
+			   //String selectProductsByShopId = "FROM Product WHERE Shop_ID = :Shop_ID Group By Product_Name";
 			String selectProductsByShopId = "FROM Product WHERE Shop_ID = :Shop_ID ";
 			
 			List <Product> listProduct = sessionFactory
@@ -418,17 +431,27 @@ private static final Logger log = LoggerFactory.getLogger(ProductDAOImpl.class);
 		
 		UniqueProduct product;
 		Product uniqProduct;
+		
+		// Getting unique product details using product name
+		List<Product> listProduct = new ArrayList<>();
+		Set<Product> setProduct = new HashSet<>();
+		
 		Price pri;
-		List<Price> list = new ArrayList();
-		List<UniqueProduct> uniList = new ArrayList();
+		
+		List<UniqueProduct> uniList = new ArrayList<>();
 		try {
 
-			List<Product> listProduct = sessionFactory.getCurrentSession()
-					.createQuery("FROM Product GROUP BY Product_Name").getResultList();
+			List<Product> list = sessionFactory.getCurrentSession()
+					.createQuery("FROM Product").getResultList();
 			
 
 			System.out.println(listProduct);
 			
+			for(Product obj : list) {
+				if(setProduct.add(obj)) {
+					listProduct.add(obj);
+				}
+			}
 
 			if ((listProduct != null) && (listProduct.size() > 0)) {
 				// userFound= true;
@@ -508,6 +531,33 @@ private static final Logger log = LoggerFactory.getLogger(ProductDAOImpl.class);
 		}
 	}
 	
+	
+	
+	
+	
+
+/* (non-Javadoc)
+ * @see com.backend.restapi.dao.UserDAO#send(org.springframework.http.HttpEntity)
+ * This for pus notification implement 
+ * FIREBASE_SERVER_KEY you have to create into firebase official site 
+ * create firebase project and generate  Firebase server key 
+ */
+	@Override
+	public CompletableFuture<String> send(HttpEntity<String> entity) {
+		
+		String FIREBASE_SERVER_KEY = "AIzaSyAuS9vJADBUEWM_pAQcgPDGR_GcNWP2knw"; // You FCM AUTH key
+		String FIREBASE_API_URL = "https://fcm.googleapis.com/fcm/send"; 
+		RestTemplate restTemplate = new RestTemplate();
+
+		ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+		interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + FIREBASE_SERVER_KEY));
+		interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
+		restTemplate.setInterceptors(interceptors);
+
+		String firebaseResponse = restTemplate.postForObject(FIREBASE_API_URL, entity, String.class);
+
+		return CompletableFuture.completedFuture(firebaseResponse);
+	}
 	
 
 }

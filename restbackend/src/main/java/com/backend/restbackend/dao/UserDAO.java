@@ -1,16 +1,20 @@
 package com.backend.restbackend.dao;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import org.springframework.http.HttpEntity;
+
+import com.backend.restbackend.user.dto.Pushnotification;
 import com.backend.restbackend.user.dto.User;
 import com.backend.restbackend.user.dto.User1;
 import com.backend.restbackend.user.dto.UserAddress;
 import com.backend.restbackend.user.dto.User_Data;
 import com.backend.restbackend.user.model.UpdateRequest;
-import com.backend.restbackend.user.model.UpdateResponseModel;
 import com.backend.restbackend.user.model.UpdateUserShopRequest;
 import com.backend.restbackend.user.model.UpdateUserShopResponse;
 import com.backend.restbackend.user.model.UserRequest;
+
 
 
 /**
@@ -63,13 +67,35 @@ public interface UserDAO {
 	 * For only one user details 
 	 * **/
 	
-	UpdateResponseModel userDetailByShopIdAndUserId(UpdateRequest updateRequest);
+	User_Data userDetailByShopIdAndUserId(UpdateRequest updateRequest);
 	
 	
 	/**
 	 * Getting all user details using shopID
 	 * ***/
 	
-	List<UpdateResponseModel> userDetailsByShopID(UpdateRequest updateRequest);
+	List<User_Data> userDetailsByShopID(UpdateRequest updateRequest);
+	
+	
+	/**
+	 * This is for push notification method 
+	 * **/
+	CompletableFuture<String> send (HttpEntity<String> entity);
+	
+	
+	/*
+	 *  This method for the push notification
+	 *  saving device id using Shop_ID
+	 */
+	
+	boolean saveDeviceID(Pushnotification pushNotification);
+	
+	
+	/**
+	 * Get Device ID from  Database
+	 * 
+	 * */
+	
+	boolean getDeviceID(String Shop_ID,String message);
 	
 }

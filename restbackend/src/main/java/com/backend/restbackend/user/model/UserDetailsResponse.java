@@ -8,13 +8,13 @@ import com.backend.restbackend.user.dto.User_Data;
 public class UserDetailsResponse extends SuccResponse {
 
 	
-	List <UpdateResponseModel> userData;
+	List <User_Data> userData;
 
-	public List<UpdateResponseModel> getUserData() {
+	public List<User_Data> getUserData() {
 		return userData;
 	}
 
-	public void setUserData(List<UpdateResponseModel> userData) {
+	public void setUserData(List<User_Data> userData) {
 		this.userData = userData;
 	}
 	

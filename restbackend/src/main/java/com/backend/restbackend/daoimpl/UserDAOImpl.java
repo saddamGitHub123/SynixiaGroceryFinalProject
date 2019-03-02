@@ -1,28 +1,40 @@
 package com.backend.restbackend.daoimpl;
+ 
 
-
-
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.hibernate.SessionFactory;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import com.backend.restbackend.common.ApiUrl;
 import com.backend.restbackend.dao.UserDAO;
 import com.backend.restbackend.user.dto.Address;
+import com.backend.restbackend.user.dto.HeaderRequestInterceptor;
+import com.backend.restbackend.user.dto.Pushnotification;
 import com.backend.restbackend.user.dto.User;
 import com.backend.restbackend.user.dto.User1;
 import com.backend.restbackend.user.dto.UserAddress;
 import com.backend.restbackend.user.dto.User_Data;
 import com.backend.restbackend.user.model.UpdateRequest;
-import com.backend.restbackend.user.model.UpdateResponseModel;
 import com.backend.restbackend.user.model.UpdateUserShopRequest;
 import com.backend.restbackend.user.model.UpdateUserShopResponse;
 import com.backend.restbackend.user.model.UserRequest;
+
 
 
 /**
@@ -53,24 +65,33 @@ public class UserDAOImpl implements UserDAO {
 	@Override
 	public List<User> listOfShop(UserRequest userRequest) {
 		
+		
 	
 		log.debug("Inserting UserDAOImpl class of listOfShop() method");
 		
 		try {
 
+			
+			
 			if (userRequest.getShop_ID() == null || userRequest.getShop_ID().isEmpty()) {
-				//String uniqueShopID = "from UserAddress where Shop_Count = :Shop_Count GROUP BY Shop_ID ";
-
-				//String distinctValue  ="distinct Shop_ID from  UserAddress where Shop_Count = :Shop_Count ";
-				//List<UserAddress> list = sessionFactory.getCurrentSession().createQuery("FROM UserAddress GROUP BY Shop_ID", UserAddress.class)
+				String uniqueShopID = "from User where Shop_Count = :Shop_Count";
+				List<User> allUserList = sessionFactory.getCurrentSession().createQuery(uniqueShopID, User.class)
 						// .setParameter("Shop_ID", Shop_ID)
-						//.setParameter("Shop_Count", true).getResultList();
+						.setParameter("Shop_Count", true).getResultList();
 				
+				// we declared set and new list for getting unique user details from database
+				// using override the  hashCode() and equals() method in User POJO class
 				
-				List<User> list = sessionFactory.getCurrentSession()
-						.createQuery("FROM User GROUP BY Shop_ID").getResultList();
+				Set<User> uniqueSet = new HashSet<>();
+				List<User> list = new ArrayList<>();				
+				for(User obj:allUserList) {
+					if(uniqueSet.add(obj))
+						list.add(obj);
+				}
 				
 				System.out.println(list.size());
+				
+				
 				
 				if ((list != null) && (list.size() > 0)) {
 					//userFound= true;
@@ -153,7 +174,8 @@ public class UserDAOImpl implements UserDAO {
 				
 				System.out.println(userAddress);
 				sessionFactory.getCurrentSession().persist(userAddress);
-				
+				sessionFactory.openSession().flush();
+				sessionFactory.openSession().beginTransaction().commit();
 				return true;
 			}
 			else {
@@ -163,7 +185,8 @@ public class UserDAOImpl implements UserDAO {
 					address.getArea(), address.getCity(),address_Active);
 			
 			sessionFactory.getCurrentSession().persist(userAddress);
-			
+			sessionFactory.openSession().flush();
+			sessionFactory.openSession().beginTransaction().commit();
 
 			return true;
 			}
@@ -260,7 +283,6 @@ public class UserDAOImpl implements UserDAO {
 			String Shop_ID = updateRequest.getShop_ID();
 			UserAddress userAddress = null ;
 			UpdateUserShopResponse userResponse = null;
-			UpdateResponseModel updateResponseModel = null;
 			//User_Data userData = updateRequest.getUserData();
 			User_Data userData = updateRequest.getUserData();
 			Address address = userData.getUserAddress();
@@ -309,11 +331,9 @@ public class UserDAOImpl implements UserDAO {
 				 sessionFactory.getCurrentSession().update(userAddress);
 					  
 				 sessionFactory.openSession().beginTransaction().commit();
-
 				 
-				 updateResponseModel = new UpdateResponseModel(Shop_ID, User_ID, userData.getName(),userData.getUser_Name(),
-						 userData.getContact(),userData.getEmail(), address);
-			 userResponse = new UpdateUserShopResponse(updateResponseModel);
+				//System.out.println(list);
+				// userResponse = new UpdateUserShopResponse(userData);
 				 
 				return userResponse;
 				}
@@ -355,20 +375,15 @@ public class UserDAOImpl implements UserDAO {
 					userAddress.setPinCode(address.getPinCode());
 					userAddress.setArea(address.getArea());
 					userAddress.setCity(address.getCity());
-					 sessionFactory.getCurrentSession().update(userAddress);
-					  
-					 sessionFactory.openSession().beginTransaction().commit();
 					
-					 updateResponseModel = new UpdateResponseModel(Shop_ID, User_ID, userData.getName(),userData.getUser_Name(),
-							 userData.getContact(),userData.getEmail(), address);
-				 userResponse = new UpdateUserShopResponse(updateResponseModel);
+					 userResponse = new UpdateUserShopResponse(userData);
 					 
-					return userResponse;
+						return userResponse;
 				}
 				else {
 					log.debug("User List is not found ");
 					
-					
+					;
 					return userResponse;
 				 }
 				
@@ -399,10 +414,10 @@ public class UserDAOImpl implements UserDAO {
 
 
 @Override
-public UpdateResponseModel userDetailByShopIdAndUserId(UpdateRequest updateRequest) {
+public User_Data userDetailByShopIdAndUserId(UpdateRequest updateRequest) {
 
 	
-	UpdateResponseModel updateResponseModel = null;
+	
 	
 	
 	try{
@@ -439,15 +454,12 @@ public UpdateResponseModel userDetailByShopIdAndUserId(UpdateRequest updateReque
 
 				address = addressList.get(0);
 				userData.setUserAddress(address);
-				
-				updateResponseModel = new UpdateResponseModel(Shop_ID, User_ID, userData.getName(),userData.getUser_Name(),
-						 userData.getContact(),userData.getEmail(), address);
 
-				return updateResponseModel;
+				return userData;
 			}
 		}
 
-		return updateResponseModel;
+		return userData;
 	}catch (RuntimeException re)
 	{
 		log.error("get failed", re);
@@ -470,7 +482,7 @@ public UpdateResponseModel userDetailByShopIdAndUserId(UpdateRequest updateReque
  * Getting all user Details in a list using shopID from user and address table 
  * **/
 	@Override
-	public List<UpdateResponseModel> userDetailsByShopID(UpdateRequest updateRequest) {
+	public List<User_Data> userDetailsByShopID(UpdateRequest updateRequest) {
 
 		try{
 			
@@ -479,10 +491,9 @@ public UpdateResponseModel userDetailByShopIdAndUserId(UpdateRequest updateReque
 	        //getting shopID from user
 		    String Shop_ID = updateRequest.getShop_ID();		
 			User_Data userData = new User_Data();
-			UpdateResponseModel updateResponseModel = null;
 			
 			// User_Data list of array content all userList
-			List<UpdateResponseModel> userList = new ArrayList();
+			List<User_Data> userList = new ArrayList<>();
 
 			
 			// select the list of a user data using shopID in user table
@@ -516,24 +527,19 @@ public UpdateResponseModel userDetailByShopIdAndUserId(UpdateRequest updateReque
 						log.debug("get successful,Adress details is found");
 
 						address = addressList.get(0);
-						//Set the particular address in ther user
-						
-						
-					//	userData.setUserAddress(address);
-						
-						updateResponseModel = new UpdateResponseModel(Shop_ID, User_ID, userData.getName(),userData.getUser_Name(),
-								 userData.getContact(),userData.getEmail(), address);
-						
-						//Add the all object to array list
-						userList.add(updateResponseModel);
-					}
-					else {
-						address = null;
-						//Set the particular address in ther user
+						//Set the particular address in their user
 						userData.setUserAddress(address);
 						
 						//Add the all object to array list
-						userList.add(updateResponseModel);
+						userList.add(userData);
+					}
+					else {
+						address = null;
+						//Set the particular address in their user
+						userData.setUserAddress(address);
+						
+						//Add the all object to array list
+						userList.add(userData);
 					}
 					
 				}
@@ -561,6 +567,171 @@ public UpdateResponseModel userDetailByShopIdAndUserId(UpdateRequest updateReque
 
 
 
+/* (non-Javadoc)
+ * @see com.backend.restapi.dao.UserDAO#send(org.springframework.http.HttpEntity)
+ * This for pus notification implement 
+ * FIREBASE_SERVER_KEY you have to create into firebase official site 
+ * create firebase project and generate  Firebase server key 
+ */
+	@Override
+	public CompletableFuture<String> send(HttpEntity<String> entity) {
+		
+		String FIREBASE_SERVER_KEY = "AIzaSyAuS9vJADBUEWM_pAQcgPDGR_GcNWP2knw"; // You FCM AUTH key
+		String FIREBASE_API_URL = "https://fcm.googleapis.com/fcm/send"; 
+		RestTemplate restTemplate = new RestTemplate();
+
+		ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+		interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + FIREBASE_SERVER_KEY));
+		interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
+		restTemplate.setInterceptors(interceptors);
+
+		String firebaseResponse = restTemplate.postForObject(FIREBASE_API_URL, entity, String.class);
+
+		return CompletableFuture.completedFuture(firebaseResponse);
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see com.backend.restapi.dao.UserDAO#saveDeviceID(com.backend.restapi.user.dto.Pushnotification)
+	 * 
+	 * This is the saveDeviceID implement method in UserDAOImpl class 
+	 * Save the Device_ID using Shop_ID
+	 * 
+	 */
+	@Override
+	public boolean saveDeviceID(Pushnotification pushNotification) {
+		
+		log.debug(" Enterring the UserDAOImpl class in saveDeviceID() method ");
+		try {
+			Pushnotification pushNotificationUpdate = null;
+			String Shop_ID = pushNotification.getShop_ID();
+			boolean Is_Active = true;
+			
+			/* Check the Shop_ID is already in table or not 
+			 * get list of the device_id
+			 * */			
+			String shopIDQuery = "FROM Pushnotification WHERE  Shop_ID = :Shop_ID AND Is_Active= :Is_Active";
+			List<Pushnotification> deviceIdList = sessionFactory.getCurrentSession()
+					.createQuery(shopIDQuery, Pushnotification.class)
+					.setParameter("Shop_ID", Shop_ID)
+					.setParameter("Is_Active", Is_Active)
+					.getResultList();
+			
+			// check list is null or not if list is null then add or save the new device_id into database
+			// if list have the shop_id the update the device_id
+				
+				if((deviceIdList != null) && (deviceIdList.size() > 0)) {
+				//System.out.println(userAddress);
+					log.info("Enterring device token update method");
+					pushNotificationUpdate = deviceIdList.get(0);
+					pushNotificationUpdate.setDevice_ID(pushNotification.getDevice_ID());
+					pushNotificationUpdate.setIs_Active(Is_Active);
+					pushNotificationUpdate.setMessage_Body(pushNotification.getMessage_Body());
+					sessionFactory.getCurrentSession().update(pushNotificationUpdate);
+					sessionFactory.openSession().beginTransaction().commit();
+					log.info("Returring  device token update method");
+					return true;
+				}
+				else {
+					log.info("Enterring device token save method");
+					pushNotification.setIs_Active(true);
+					sessionFactory.getCurrentSession().save(pushNotification);
+					log.info("Returring  device token save method");
+					return true;
+				}
+			
+		}catch (RuntimeException re) {
+				log.error("get failed", re);
+				throw re;
+			} finally {
+				/*
+				 * if (sessionFactory != null) { sessionFactory.close(); }
+				 */
+			}
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see com.backend.restapi.dao.UserDAO#getDeviceID(java.lang.String)
+	 */
+	@Override
+	public boolean getDeviceID(String Shop_ID,String message) {
+		// TODO Auto-generated method stub
+		log.info(" Enterring getDeviceID() method in UserDAOImpl class"); 
+		
+		String getDeviceIDList = "From Pushnotification where Shop_ID = :Shop_ID";
+		List<Pushnotification> listPushnotification = sessionFactory.getCurrentSession()
+														.createQuery(getDeviceIDList,Pushnotification.class)
+														.setParameter("Shop_ID", Shop_ID)
+														.getResultList();
+		
+		if(listPushnotification!= null && listPushnotification.size() > 0) {
+			
+			String userDeviceIdKey = listPushnotification.get(0).getDevice_ID();
+			try {
+				serverToOneDevice(userDeviceIdKey,message);
+				
+				return true;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
+			
+		}else {
+			return false;
+		}
+		
+		
+	}
+
+
+	/***
+	 * its send notification from server to one device or particular device
+	 * 
+	 * Finally It is working Using Andriod and web
+	 */
+	static void serverToOneDevice(String userDeviceIdKey,String message) throws Exception {
+
+		//String userDeviceIdKey = "egtbfsd8MCo:APA91bGEDXehUv8iDoJE9Mj802ESCLlAtZXhdqMgHUiLU9hbUn3B-lYdvqISCc-t3FLnxGfS0IrxLkr_yhMtSuu98r-jwWn7opDjuNLjVsJ7dPacVbbunHK9rX_AezwXnROLjMe3w7HL";
+		
+	//	String userDeviceIdKey ="fTiMENgaIAI:APA91bHdqOZEZHYlq34Aeve6_30WskJX1oBy56-kSTBh18usYArkr06tXXOIUjDDWBLo9ICLk5q5b0-4U4lo38AlJklTOm7yrMZIlu9LtaiGNqF1frefTyThDaFqyIiMaFnqgSUj-o3q";
+		// String authKey = AUTH_KEY_FCM; // You FCM AUTH key
+		// String FMCurl = "https://fcm.googleapis.com/fcm/send";
+	//	String FIREBASE_SERVER_KEY = "AIzaSyAuS9vJADBUEWM_pAQcgPDGR_GcNWP2knw"; // You FCM AUTH key
+		
+		//String FIREBASE_SERVER_KEY = ApiUrl.FCM__SERVER_KEY; 
+		//String FIREBASE_API_URL = "https://fcm.googleapis.com/fcm/send";
+
+		URL url = new URL(ApiUrl.FCM__API_URL);
+		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+		conn.setUseCaches(false);
+		conn.setDoInput(true);
+		conn.setDoOutput(true);
+
+		conn.setRequestMethod("POST");
+		conn.setRequestProperty("Authorization", "key=" + ApiUrl.FCM__SERVER_KEY);
+		conn.setRequestProperty("Content-Type", "application/json");
+
+		JSONObject json = new JSONObject();
+		json.put("to", userDeviceIdKey.trim());
+		JSONObject info = new JSONObject();
+		info.put("title", "Notificatoin"); // Notification title
+		//info.put("body", "Add new Product"); // Notification body
+		info.put("body",message);
+		json.put("notification", info);
+
+		OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+		wr.write(json.toString());
+		wr.flush();
+		conn.getInputStream();
+		System.out.println(conn);
+		System.out.println(json.toString());
+		//return null;
+	}
 	
 
 

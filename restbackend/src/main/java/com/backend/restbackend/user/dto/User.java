@@ -11,6 +11,8 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+
+
 @Entity
 @Table(name ="usershop_details")
 public class User implements Serializable {
@@ -23,15 +25,26 @@ public class User implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int ID;
-	
+
+	//@JsonView(JsonViewModel.LoginView.class) 
 	private String Shop_ID;
+	
+	//@JsonView(JsonViewModel.LoginView.class) 
 	private String User_ID;
+
+	//@JsonView(JsonViewModel.LoginView.class) 
 	private String Name;
+	
 	private String User_Name;
 	private String User_Password;
+	
+	//@JsonView(JsonViewModel.LoginView.class) 
 	@Column(name="phn_number")
 	private String Contact;
+	
+	//@JsonView(JsonViewModel.LoginView.class) 
 	private String Email;
+	
 	private boolean Is_Active;
 	private boolean Shop_Count;
 	
@@ -169,6 +182,41 @@ public class User implements Serializable {
 	 */
 	public void setShop_Count(boolean shop_Count) {
 		Shop_Count = shop_Count;
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((Shop_ID == null) ? 0 : Shop_ID.hashCode());
+		return result;
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (Shop_ID == null) {
+			if (other.Shop_ID != null)
+				return false;
+		} else if (!Shop_ID.equals(other.Shop_ID))
+			return false;
+		return true;
 	}
 	
 	

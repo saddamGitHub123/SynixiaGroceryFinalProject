@@ -8,8 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 @Table(name="usershop_details")
 public class User_Data {
@@ -36,7 +34,6 @@ public class User_Data {
 	/**
 	 * @return the iD
 	 */
-	@JsonIgnore
 	public int getID() {
 		return ID;
 	}
@@ -165,7 +162,6 @@ public class User_Data {
 	/**
 	 * @return the is_Active
 	 */
-	@JsonIgnore
 	public boolean isIs_Active() {
 		return Is_Active;
 	}
@@ -182,7 +178,6 @@ public class User_Data {
 	/**
 	 * @return the shop_Count
 	 */
-	@JsonIgnore
 	public boolean isShop_Count() {
 		return Shop_Count;
 	}

@@ -1,16 +1,18 @@
 package com.backend.restbackend.user.model;
-import com.backend.restbackend.common.SuccResponse;
 import com.backend.restbackend.user.dto.User_Data;
+
+import com.backend.restbackend.common.SuccResponse;
+
 
 public class UpdateResponse extends SuccResponse{
 	
-	UpdateResponseModel userData;
+	User_Data userData;
 
-	public UpdateResponseModel getUserData() {
+	public User_Data getUserData() {
 		return userData;
 	}
 
-	public void setUserData(UpdateResponseModel userData) {
+	public void setUserData(User_Data userData) {
 		this.userData = userData;
 	}
 

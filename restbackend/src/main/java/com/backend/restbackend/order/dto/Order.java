@@ -1,6 +1,4 @@
-package com.backend.restbackend.order.dto;
-
-
+ package com.backend.restbackend.order.dto;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,7 +10,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "orderList")
+@Table(name = "orderlist")
 public class Order {
 	
 	@Id
@@ -42,7 +40,7 @@ public class Order {
     java.sql.Timestamp currentTimestamp;
     
     public Order() {
-		 //this.code = UUID.randomUUID().toString().substring(26).toUpperCase();
+		// this.code = UUID.randomUUID().toString().substring(26).toUpperCase();
 	 }
 
 	@Override
@@ -82,14 +80,14 @@ public class Order {
 		ID = iD;
 	}
 
-//	@JsonIgnore
-//	public String getCode() {
-//		return code;
-//	}
-//
-//	public void setCode(String code) {
-//		this.code = code;
-//	}
+	/*@JsonIgnore
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}*/
 
 	@JsonIgnore
 	public String getShop_ID() {
@@ -175,6 +173,37 @@ public class Order {
 
 	public void setOrder_Active(boolean order_Active) {
 		Order_Active = order_Active;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((Order_ID == null) ? 0 : Order_ID.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Order other = (Order) obj;
+		if (Order_ID == null) {
+			if (other.Order_ID != null)
+				return false;
+		} else if (!Order_ID.equals(other.Order_ID))
+			return false;
+		return true;
 	}
 
     

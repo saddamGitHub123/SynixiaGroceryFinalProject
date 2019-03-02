@@ -6,6 +6,7 @@ import com.backend.restbackend.common.SuccResponse;
 import com.backend.restbackend.order.dto.Order;
 
 
+
 public class OrderListResponse extends SuccResponse{
 	
 	List<Order> orderList;

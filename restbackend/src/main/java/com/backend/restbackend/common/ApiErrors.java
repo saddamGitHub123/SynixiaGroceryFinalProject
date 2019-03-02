@@ -2,14 +2,49 @@ package com.backend.restbackend.common;
 
 public interface ApiErrors {
 	
+	// For User Message 
+	public static final String ERROR__ALREADY_EXIST = "Already Username or Phone number or Email exisit";
+	public static final String ERROR__EMPTY_SHOPKEEPER = "Shopkeeper List is Empty";
+	public static final String ERROR__EMPTY_USER = "User List is Empty";
+	public static final String ERROR__EMPTY_USER__SHOP = "Shop_ID and User_ID is empty";
+	public static final String SUCCESS__SHOPKEEPER_ADD = "Successfully Add ShopKeeper";
+	public static final String SUCCESS__USER_ADD = "Successfully Add User";
+	public static final String SUCCESS__USER_UPDATE = "Successfully Update User";
+	
+	public static final String ERROR__DATA__NOT_SAVE = "Data is not save";
+	
+	public static final String SUCCESS__AUTHENTICATED = "Successfully Authenticated";
+	
+	// Push Notification 
+	
+	public static final String SUCCESS__SAVE_DEVICE_TOKEN = "Successfully save and update device token";
+	public static final String FCM_SUCCESS__ADD_PRODUCT = " Add New Product into List ";
+	public static final String FCM_SUCCESS__ADD_ORDER = " Add New Order into List : ";
+	
+	public static final String ERROR__DEVICE_TOKEN = "ERROR!! Server not getting Device Token ";
+	
 	//ORDER TABLE	
 	public static final String ERROR__ORDER_LIST_EMPTY = "Orderlist is empty";
 	
 	
 	
-	//for login controller
-
+	// Login Controller
 	
+	public static final String SUCCESS__LOGIN = "Login Successfully Authenticate";
+	public static final String ERROR__LOGIN = "User Name and Password not found";
+	
+	
+	//Product Contrller
+	public static final String ERROR__SHOP_ID = "Shop_ID is empty";
+	public static final String ERROR__SHOP_ID_NOT_EXIST = "Shop_ID is not Exist";
+	public static final String ERROR__PRODUCT_ID_NOT_EXIST = "Product_ID is not Exist";
+	public static final String ERROR__PRODUCT_IS_NOT_EXIST = "Product is not Exist";
+	public static final String ERROR__PRODUCT_ID_EMPTY = "Product_ID is Empty";
+	public static final String ERROR__ADD_PRODUCT_NAME = "You have to Add Product Name";
+	public static final String ERROR__ADD_PRODUCT_TYPE = "Add First Product";
+	public static final String ERROR__ADD_NEW_PRODUCT = "Add New Product";
+	
+	public static final String SUCCESS__UPDATE_PRODUCTLIST = "Sucessfully Update Product List";
 	
 	
     public static final String ERROR__PHONE_CELL_MISSING = "Phone cell is missing";

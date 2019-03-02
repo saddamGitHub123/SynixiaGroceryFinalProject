@@ -4,6 +4,7 @@
 package com.backend.restbackend.user.model;
 
 import com.backend.restbackend.common.SuccResponse;
+import com.backend.restbackend.user.dto.User_Data;
 
 /**
  * @author Sk Saddam Hosan
@@ -11,27 +12,35 @@ import com.backend.restbackend.common.SuccResponse;
  */
 public class UpdateUserShopResponse extends SuccResponse {
 	
-	UpdateResponseModel userData;
+	User_Data userData;
 	
 	public UpdateUserShopResponse() {
 
 	}
 
-	public UpdateUserShopResponse(UpdateResponseModel userData) {
+	
+
+	/**
+	 * @param userData
+	 */
+	public UpdateUserShopResponse(User_Data userData) {
 		super();
 		this.userData = userData;
 	}
 
-	public UpdateResponseModel getUserData() {
+	/**
+	 * @return the userData
+	 */
+	public User_Data getUserData() {
 		return userData;
 	}
 
-	public void setUserData(UpdateResponseModel userData) {
+	/**
+	 * @param userData the userData to set
+	 */
+	public void setUserData(User_Data userData) {
 		this.userData = userData;
 	}
-
-	
-
 	
 	
 

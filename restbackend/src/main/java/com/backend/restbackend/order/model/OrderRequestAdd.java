@@ -1,10 +1,8 @@
 package com.backend.restbackend.order.model;
 
 import java.util.List;
-import java.util.UUID;
 
 import com.backend.restbackend.order.dto.Order;
-
 
 
 public class OrderRequestAdd {
@@ -19,7 +17,7 @@ public class OrderRequestAdd {
     private double Total_Amount;
     
     public OrderRequestAdd() {
- 		 this.Order_ID ="OID "+ UUID.randomUUID().toString().substring(26).toUpperCase();
+ 		// this.Order_ID ="OID "+ UUID.randomUUID().toString().substring(26).toUpperCase();
     	//this.Order_ID ="OID"+ String.valueOf(sendOTP(8));
  	 }
     

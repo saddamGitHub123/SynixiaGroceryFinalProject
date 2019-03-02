@@ -104,12 +104,12 @@
 			<version>${spring.version}</version>
 		</dependency>
 
-    <!-- MySQL Connector -->
-		  <dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.16</version>
-		</dependency>
+    <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>8.0.11</version>
+	</dependency>
 	
 
 		<!-- Hibernate Dependence -->
@@ -117,6 +117,13 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}</version>
+		</dependency>
+		
+				<!-- push notification to firebase -->
+		<dependency>
+			<groupId>com.ganyo</groupId>
+			<artifactId>gcm-server</artifactId>
+			<version>1.0.2</version>
 		</dependency>
 
 		<!-- Database connection Pooling -->
@@ -133,6 +140,19 @@
 			</exclusions>
 		</dependency>
 
+<!-- gson used in push notification model class-->
+<dependency>
+	<groupId>com.google.code.gson</groupId>
+	<artifactId>gson</artifactId>
+	<version>2.3</version>
+</dependency>
+
+<!-- For httpClient in push notification model class -->
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.5.2</version>
+</dependency>
 
 		<!-- Jackson -->
 		<dependency>

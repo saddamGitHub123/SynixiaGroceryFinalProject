@@ -2,6 +2,8 @@ package com.backend.restbackend.product.model;
 
 import com.backend.restbackend.common.SuccResponse;
 
+
+
 public class RequestProduct extends SuccResponse{
 
 
